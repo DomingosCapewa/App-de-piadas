@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Piadas Aleatórias</title>
+    <Link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Gerador de Piadas Aleatórias</h1>
+
+        <div class="filters">
+            <div class="filter-group">
+                <label for="category">Categoria:</label>
+                <select id="category">
+                    <option value="Any">Qualquer</option>
+                    <option value="Programming">Programação</option>
+                    <option value="Misc">Diversas</option>
+                    <option value="Dark">Humor Negro</option>
+                    <option value="Pun">Trocadilhos</option>
+                    <option value="Spooky">Assustadoras</option>
+                    <option value="Christmas">Natal</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="language">Idioma:</label>
+                <select id="language">
+                    <option value="pt">Português</option>
+                    <option value="en">Inglês</option>
+                    <option value="es">Espanhol</option>
+                    <option value="fr">Francês</option>
+                    <option value="de">Alemão</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="type">Tipo:</label>
+                <select id="type">
+                    <option value="any">Qualquer</option>
+                    <option value="single">Única parte</option>
+                    <option value="twopart">Duas partes</option>
+                </select>
+            </div>
+        </div>
+
+        <button class="joke-button" id="getJokeButton">Gerar Nova Piada</button>
+
+        <div class="loading" id="loading">
+            <p>Carregando piada...</p>
+        </div>
+
+        <div class="error" id="error">
+            <p>Erro ao carregar piada. Tente novamente.</p>
+        </div>
+
+        <div class="joke-container" id="jokeContainer">
+            <div class="joke-text" id="jokeText">
+                Clique no botão acima para gerar uma piada!
+            </div>
+        </div>
+
+        <div id="jokeCategory"></div>
+    </div>
+
+    <script>
+        // Elementos do DOM
+        const categorySelect = document.getElementById('category');
+        const languageSelect = document.getElementById('language');
+        const typeSelect = document.getElementById('type');
+        const getJokeButton = document.getElementById('getJokeButton');
+        const loadingDiv = document.getElementById('loading');
+        const errorDiv = document.getElementById('error');
+        const jokeContainer = document.getElementById('jokeContainer');
+        const jokeText = document.getElementById('jokeText');
+        const jokeCategory = document.getElementById('jokeCategory');
+
+        
+        getJokeButton.addEventListener('click', gerarPiada);
+
+   
+        window.onload = gerarPiada;
+
+   
+        async function gerarPiada() {
+            const categoria = categorySelect.value;
+            const idioma = languageSelect.value;
+            const tipo = typeSelect.value;
+
+   
+            loadingDiv.style.display = 'block';
+            errorDiv.style.display = 'none';
+            jokeContainer.style.display = 'none';
+            jokeCategory.innerHTML = '';
+
+            try {
+          
+                let url = `https://v2.jokeapi.dev/joke/${categoria}?lang=${idioma}`;
+
+                if (tipo !== 'any') {
+                    url += `&type=${tipo}`;
+                }
+
+
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar piada');
+                }
+
+                const data = await response.json();
+
+ 
+                exibirPiada(data);
+
+            } catch (error) {
+                console.error('Erro ao carregar piada:', error);
+                loadingDiv.style.display = 'none';
+                errorDiv.style.display = 'block';
+                jokeContainer.style.display = 'flex';
+            }
+        }
+
+
+        function exibirPiada(data) {
+            let conteudoPiada = '';
+
+            if (data.type === 'single') {
+     
+                conteudoPiada = `<div>${data.joke}</div>`;
+            } else if (data.type === 'twopart') {
+              
+                conteudoPiada = `
+                    <div class="joke-setup">${data.setup}</div>
+                    <div class="joke-delivery">${data.delivery}</div>
+                `;
+            }
+
+            jokeText.innerHTML = conteudoPiada;
+
+
+            if (data.category && data.category !== 'Any') {
+                jokeCategory.innerHTML = `<div class="joke-category">Categoria: ${data.category}</div>`;
+            }
+
+  
+            loadingDiv.style.display = 'none';
+            jokeContainer.style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
+
+
